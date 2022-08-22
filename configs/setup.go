@@ -39,6 +39,6 @@ var DB *mongo.Client = ConnectDB()
 //gettin db collections
 
 func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {
-	collection := client.Database("cavescoAPI").Collection(collectionName)
+	collection := client.Database("carvescoAPI").Collection(collectionName)
 	return collection
 }
