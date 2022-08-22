@@ -15,14 +15,3 @@ func EnvMongoURI() string {
 
 	return os.Getenv("MONGOURI")
 }
-
-func EnvPort() string {
-	err := godotenv.Load()
-	if err != nil {
-
-		log.Fatal("Error loading .env file")
-		return "3000"
-	}
-
-	return os.Getenv("PORT")
-}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"carvescoAPI/configs"
+	"os"
 
 	"carvescoAPI/routes"
 
@@ -23,5 +24,6 @@ func main() {
 	//routes
 	routes.EmailRoute(router)
 
-	router.Run("localhost:" + configs.EnvPort())
+	port := os.Getenv("PORT")
+	router.Run(":" + port)
 }
