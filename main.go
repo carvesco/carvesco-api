@@ -23,5 +23,5 @@ func main() {
 	//routes
 	routes.EmailRoute(router)
 
-	router.Run("localhost:8080")
+	router.Run("localhost:" + configs.EnvPort())
 }
