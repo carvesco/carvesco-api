@@ -38,6 +38,7 @@ func CreateEmail() gin.HandlerFunc {
 		newEmail := models.Email{
 			Id:          primitive.NewObjectID(),
 			FromAddress: email.FromAddress,
+			Name:        email.Name,
 			ToAddress:   email.ToAddress,
 			Message:     email.Message,
 		}
