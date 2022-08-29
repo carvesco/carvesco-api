@@ -43,6 +43,7 @@ func main() {
 
 	//routes
 	routes.EmailRoute(router)
+	routes.SerendipiaRoute(router)
 
 	port := os.Getenv("PORT")
 	router.Run(":" + port)
