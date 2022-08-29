@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -50,6 +51,30 @@ func CreateSerendipia() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusCreated, responses.SerendipiaResponse{Status: http.StatusCreated, Message: "success", Data: map[string]interface{}{"data": result}})
+
+	}
+
+}
+func GetASerendipia() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		//var serendipia models.Serendipia
+		defer cancel()
+
+		sample := bson.D{{"$sample", bson.D{{"size", 1}}}}
+
+		cursor, err := serendipiaCollection.Aggregate(ctx, mongo.Pipeline{sample})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, responses.SerendipiaResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+			return
+		}
+
+		var result []bson.M
+		if err = cursor.All(ctx, &result); err != nil {
+			panic(err)
+		}
+
+		c.JSON(http.StatusOK, responses.SerendipiaResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": result}})
 
 	}
 }
