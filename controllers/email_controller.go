@@ -56,7 +56,7 @@ func CreateEmail() gin.HandlerFunc {
 		d := gomail.NewDialer("smtp.gmail.com", 587, "carvesco.contact@gmail.com", "yqqmszxfrzidkqek")
 
 		//set false in production
-		d.TLSConfig = &tls.Config{InsecureSkipVerify: false}
+		d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 		//Send Email
 		if err := d.DialAndSend(m); err != nil {
