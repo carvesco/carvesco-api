@@ -5,8 +5,6 @@ import (
 	"carvescoAPI/models"
 	"carvescoAPI/responses"
 	"context"
-	"crypto/tls"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -14,7 +12,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"gopkg.in/gomail.v2"
 )
 
 var emailCollection *mongo.Collection = configs.GetCollection(configs.DB, "emails")
@@ -45,23 +42,6 @@ func CreateEmail() gin.HandlerFunc {
 			Name:        email.Name,
 			ToAddress:   email.ToAddress,
 			Message:     email.Message,
-		}
-
-		m := gomail.NewMessage()
-		m.SetHeader("From", "carvesco.contact@gmail.com")
-		m.SetHeader("To", "carvesco@gmail.com")
-		m.SetHeader("Subject", "New contact from: "+email.Name)
-		m.SetBody("text/plain", "message from "+email.FromAddress+": "+email.Message)
-		//setting for the smtp server
-		d := gomail.NewDialer("smtp.gmail.com", 587, "carvesco.contact@gmail.com", "yqqmszxfrzidkqek")
-
-		//set false in production
-		d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-		//Send Email
-		if err := d.DialAndSend(m); err != nil {
-			fmt.Println(err)
-			panic(err)
 		}
 
 		result, err := emailCollection.InsertOne(ctx, newEmail)
