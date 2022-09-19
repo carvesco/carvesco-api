@@ -78,3 +78,74 @@ func GetASerendipia() gin.HandlerFunc {
 
 	}
 }
+
+func EditSerendipia() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		serendipiaId := c.Param("serendipiaId")
+		var serendipia models.Serendipia
+		defer cancel()
+		objId, _ := primitive.ObjectIDFromHex(serendipiaId)
+
+		//validate the request body
+		if err := c.BindJSON(&serendipia); err != nil {
+			c.JSON(http.StatusBadRequest, responses.SerendipiaResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+			return
+		}
+
+		//use the validator library to validate required fields
+		if validationErr := validate.Struct(&serendipia); validationErr != nil {
+			c.JSON(http.StatusBadRequest, responses.SerendipiaResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": validationErr.Error()}})
+			return
+		}
+
+		update := bson.M{"details": serendipia.Details, "image": serendipia.Image, "title": serendipia.Title, "type": serendipia.Type, "review": serendipia.Review, "link": serendipia.Link}
+
+		result, err := serendipiaCollection.UpdateOne(ctx, bson.M{"id": objId}, bson.M{"$set": update})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, responses.SerendipiaResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+			return
+		}
+
+		//get updated user details
+		var updatedSerendipia models.Serendipia
+		if result.MatchedCount == 1 {
+			err := serendipiaCollection.FindOne(ctx, bson.M{"id": objId}).Decode(&updatedSerendipia)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, responses.SerendipiaResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+				return
+			}
+		}
+		c.JSON(http.StatusOK, responses.SerendipiaResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": updatedSerendipia}})
+
+	}
+}
+func GetAllSerendipias() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		var serendipias []models.Serendipia
+		defer cancel()
+
+		results, err := serendipiaCollection.Find(ctx, bson.M{})
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, responses.SerendipiaResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+			return
+		}
+
+		//reading from the db in an optimal way
+		defer results.Close(ctx)
+		for results.Next(ctx) {
+			var singleSrenedipia models.Serendipia
+			if err = results.Decode(&singleSrenedipia); err != nil {
+				c.JSON(http.StatusInternalServerError, responses.SerendipiaResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+			}
+
+			serendipias = append(serendipias, singleSrenedipia)
+		}
+
+		c.JSON(http.StatusOK,
+			responses.SerendipiaResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": serendipias}},
+		)
+	}
+}
